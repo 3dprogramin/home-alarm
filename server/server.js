@@ -9,8 +9,8 @@ const port = parseInt(process.env.PORT);
 // do not change here, use .env file
 const TOKEN = process.env.TOKEN;
 const TRIGGER_DELAY = parseInt(process.env.TRIGGER_DELAY);
-const DISCORD_WEBHOOK_ACTIVATED = process.env.DISCORD_WEBHOOK_ACTIVATED;
-const DISCORD_WEBHOOK_TRIGGER = process.env.DISCORD_WEBHOOK_TRIGGER;
+const NTFY_URL = process.env.NTFY_URL;
+const NTFY_TOKEN = process.env.NTFY_TOKEN;
 
 let discordTimeout = null;
 
@@ -25,15 +25,17 @@ app.use((req, res, next) => {
   next();
 });
 
-// send a notification to Discord
-async function sendDiscordNotification(webhook, message) {
+// send a notification via ntfy
+async function sendNotification(message) {
   try {
-    await axios.post(webhook, {
-      content: message,
+    await axios.post(NTFY_URL, message, {
+      headers: {
+        Authorization: `Bearer ${NTFY_TOKEN}`,
+      },
     });
-    console.log("[+] Notification sent to Discord");
+    console.log("[+] Notification sent via ntfy");
   } catch (error) {
-    console.error(`[-] Error sending Discord notification: ${error.message}`);
+    console.error(`[-] Error sending ntfy notification: ${error.message}`);
   }
   discordTimeout = null;
 }
@@ -41,7 +43,7 @@ async function sendDiscordNotification(webhook, message) {
 // called when alarm is activated
 app.get("/alarm/activate", (req, res) => {
   try {
-    sendDiscordNotification(DISCORD_WEBHOOK_ACTIVATED, "Activated 🔑");
+    sendNotification("Activated 🔑");
     console.log("[+] Alarm activated");
     res.send("Alarm activated");
   } catch (err) {
@@ -60,7 +62,7 @@ app.get("/alarm/trigger", (req, res) => {
     }
     // set the timeout for sending the Discord notification
     discordTimeout = setTimeout(() => {
-      sendDiscordNotification(DISCORD_WEBHOOK_TRIGGER, "🚨 Intruder detected! 🚨");
+      sendNotification("🚨 Intruder detected! 🚨");
     }, TRIGGER_DELAY);
     console.log("[+] Alarm triggered");
     res.send("Alarm triggered");
