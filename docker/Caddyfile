@@ -1,0 +1,4 @@
+https://docker.lan {
+    tls internal
+    reverse_proxy home-alarm-app:3000
+}

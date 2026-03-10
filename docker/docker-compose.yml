@@ -1,0 +1,32 @@
+services:
+  home-alarm-app:
+    build: .
+    container_name: home-alarm-app
+    restart: unless-stopped
+    expose:
+      - "3000"
+    networks:
+      - home-alarm-net
+
+  home-alarm-caddy:
+    image: caddy:2-alpine
+    container_name: home-alarm-caddy
+    restart: unless-stopped
+    ports:
+      - "8000:443"   # or "443:443" if you want standard HTTPS
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - home_alarm_caddy_data:/data
+      - home_alarm_caddy_config:/config
+    depends_on:
+      - home-alarm-app
+    networks:
+      - home-alarm-net
+
+networks:
+  home-alarm-net:
+    driver: bridge
+
+volumes:
+  home_alarm_caddy_data:
+  home_alarm_caddy_config:

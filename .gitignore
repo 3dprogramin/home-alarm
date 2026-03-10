@@ -5,3 +5,6 @@
 .vscode/ipch
 server/node_modules
 server/.env
+docker/.env
+docker/node_modules
+home-alarm-info.txt
